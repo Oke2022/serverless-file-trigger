@@ -34,7 +34,7 @@ resource "aws_lambda_function" "upload_trigger" {
   runtime       = "python3.11"
   role          = aws_iam_role.lambda_exec.arn
   filename      = "${path.module}/../lambda/function.zip"
-  source_code_hash = filebase64sha256("${path.module}/../lambda/function.zip")
+  source_code_hash = filebase64sha256("${path.module}/function.zip")
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
