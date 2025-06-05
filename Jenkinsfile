@@ -17,9 +17,8 @@ pipeline {
     stage('Zip Lambda Function') {
       steps {
         dir('lambda') {
-          sh 'zip function.zip handler.py'
-          sh 'mv function.zip ../terraform/'
-        }
+  	  sh 'zip ../terraform/function.zip handler.py'
+	}
       }
     }
 

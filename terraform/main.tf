@@ -3,7 +3,11 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "upload_bucket" {
-  bucket = var.bucket_name
+  bucket = "my-serverless-bucket-${random_id.suffix.hex}"
+}
+
+resource "random_id" "suffix" {
+  byte_length = 4
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -33,7 +37,7 @@ resource "aws_lambda_function" "upload_trigger" {
   handler       = "handler.lambda_handler"
   runtime       = "python3.11"
   role          = aws_iam_role.lambda_exec.arn
-  filename      = "${path.module}/../lambda/function.zip"
+  filename         = "${path.module}/function.zip"
   source_code_hash = filebase64sha256("${path.module}/function.zip")
 }
 
