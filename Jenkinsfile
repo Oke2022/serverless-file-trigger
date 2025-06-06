@@ -7,6 +7,10 @@ pipeline {
     AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
   }
 
+  parameters {
+    booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy Terraform Infrastructure?')
+  }
+
   stages {
     stage('Checkout Code') {
       steps {
@@ -17,8 +21,8 @@ pipeline {
     stage('Zip Lambda Function') {
       steps {
         dir('lambda') {
-  	  sh 'zip ../terraform/function.zip handler.py'
-	}
+          sh 'zip ../terraform/function.zip handler.py'
+        }
       }
     }
 
@@ -31,9 +35,23 @@ pipeline {
     }
 
     stage('Terraform Apply') {
+      when {
+        expression { !params.DESTROY_INFRA }
+      }
       steps {
         dir('terraform') {
           sh 'terraform apply -auto-approve'
+        }
+      }
+    }
+
+    stage('Terraform Destroy') {
+      when {
+        expression { params.DESTROY_INFRA }
+      }
+      steps {
+        dir('terraform') {
+          sh 'terraform destroy -auto-approve'
         }
       }
     }
@@ -41,10 +59,16 @@ pipeline {
 
   post {
     success {
-      echo "✅ Terraform applied successfully!"
+      script {
+        if (params.DESTROY_INFRA) {
+          echo "✅ Terraform resources destroyed successfully!"
+        } else {
+          echo "✅ Terraform applied successfully!"
+        }
+      }
     }
     failure {
-      echo "❌ Terraform apply failed."
+      echo "❌ Terraform operation failed."
     }
   }
 }
